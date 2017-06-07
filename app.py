@@ -54,37 +54,37 @@ class EchoStreamProcessor():
             [self.input_topic],
             {'bootstrap.servers': self.servers})
 
-        def configure_processing(self):
-            """Configure the processing pipeline
+    def configure_processing(self):
+        """Configure the processing pipeline
 
-            This function contains all the stream processing
-            configuration that will affect how each RDD is processed.
-            It will be called before the stream listener is started.
-            """
-            def send_response(rdd):
-                """A function to publish an RDD to a Kafka topic"""
-                producer = kafka.KafkaProducer(bootstrap_servers=self.servers)
-                for r in rdd.collect():
-                    producer.send(self.output_topic, str(r))
-                producer.flush()
+        This function contains all the stream processing
+        configuration that will affect how each RDD is processed.
+        It will be called before the stream listener is started.
+        """
+        def send_response(rdd):
+            """A function to publish an RDD to a Kafka topic"""
+            producer = kafka.KafkaProducer(bootstrap_servers=self.servers)
+            for r in rdd.collect():
+                producer.send(self.output_topic, str(r))
+            producer.flush()
 
-            messages = self.kafka_stream.map(lambda m: m[1])
-            messages.foreachRDD(send_response)
+        messages = self.kafka_stream.map(lambda m: m[1])
+        messages.foreachRDD(send_response)
 
-        def start_and_await_termination(self):
-            """Start the stream processor
+    def start_and_await_termination(self):
+        """Start the stream processor
 
-            This function will start the Spark-based stream processor,
-            it will run until `stop` is called or an exception is
-            thrown.
-            """
-            self.configure_processing()
-            self.streaming_context.start()
-            self.streaming_context.awaitTermination()
+        This function will start the Spark-based stream processor,
+        it will run until `stop` is called or an exception is
+        thrown.
+        """
+        self.configure_processing()
+        self.streaming_context.start()
+        self.streaming_context.awaitTermination()
 
-        def stop(self):
-            """Stop the stream processor"""
-            self.streaming_context.stop()
+    def stop(self):
+        """Stop the stream processor"""
+        self.streaming_context.stop()
 
 
 def main():
