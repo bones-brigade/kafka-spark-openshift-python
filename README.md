@@ -3,16 +3,16 @@
 A Python source-to-image application skeleton for using Apache Spark and
 Kafka on OpenShift.
 
-This application will simply read messages from an Kafka topic, and
+This application will simply read messages from a Kafka topic, and
 the write those messages back out to a second topic. It will achieve this
 using Spark's streaming utilities for Kafka.
 
 ## usage on openshift
 
-As this project utilizes Spark, it requires the usage of the
-[RADanalytics](https://radanalytics.io) tooling. The source-to-image nature
-of this application will require that a Spark cluster is available. The
-easiest path to making that connection is to use the automatically spawned
+As this project utilizes Spark, it will be easiest to consume on OpenShift by
+using the [RADanalytics](https://radanalytics.io) tooling. The source-to-image
+nature of this application will require that a Spark cluster is available. The
+shortest path to making that connection is to use the automatically spawned
 Spark clusters that are created by the
 [Oshinko project source-to-image](https://github.com/radanalyticsio/oshinko-s2i)
 utilities. Please see that documentation for more information about this
