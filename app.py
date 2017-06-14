@@ -65,7 +65,10 @@ class EchoStreamProcessor():
             """A function to publish an RDD to a Kafka topic"""
             producer = kafka.KafkaProducer(bootstrap_servers=self.servers)
             for r in rdd.collect():
-                producer.send(self.output_topic, r)
+                try:
+                    producer.send(self.output_topic, r)
+                except:
+                    print('Error sending collected RDD: {}'.format(r))
             producer.flush()
 
         messages = self.kafka_stream.map(lambda m: m[1])
