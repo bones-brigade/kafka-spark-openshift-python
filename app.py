@@ -66,10 +66,10 @@ class EchoStreamProcessor():
             producer = kafka.KafkaProducer(bootstrap_servers=self.servers)
             for r in rdd.collect():
                 try:
-                    record = '{}'.format(r)
+                    record = r.encode('ascii', 'backslashreplace')
                     producer.send(self.output_topic, record)
                 except Exception as e:
-                    print('Error sending collected RDD: {}'.format(r))
+                    print('Error sending collected RDD')
                     print('Original exception: {}'.format(e))
             producer.flush()
 
