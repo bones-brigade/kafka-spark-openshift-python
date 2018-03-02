@@ -29,9 +29,9 @@ for some inspiration on prototyping this process.
 
 1. launch the skeleton with the following command:
    ```bash
-   oc new-app --template=oshinko-pyspark-build-dc \
+   oc new-app --template=oshinko-python-build-dc \
               -p APPLICATION_NAME=skeleton \
-              -p GIT_URI=https://github.com/elmiko/spark-kafka-openshift-skeleton \
+              -p GIT_URI=https://github.com/bones-brigade/kafka-spark-openshift-python \
               -p APP_ARGS='--servers=apache-kafka:9092 --in=topic1 --out=topic2'  \
               -p SPARK_OPTIONS='--packages org.apache.spark:spark-streaming-kafka-0-8_2.11:2.1.0'
    ```
