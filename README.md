@@ -1,4 +1,4 @@
-# spark-kafka-openshift-skeleton
+# kafka-spark-openshift-python
 
 A Python source-to-image application skeleton for using Apache Spark and
 Kafka on OpenShift.
@@ -7,7 +7,29 @@ This application will simply read messages from a Kafka topic, and
 the write those messages back out to a second topic. It will achieve this
 using Spark's streaming utilities for Kafka.
 
-## usage on openshift
+## Prerequisites
+
+* OpenShift - this application is designed for use on OpenShift, you can find
+  great documentation and starter guides
+  [on their website](https://docs.openshift.org/latest/getting_started/index.html).
+
+* Apache Kafka - because this application requires a Kafka broker to read from
+  and write to, you will need to a broker deployed and a source of
+  information. The Strimzi project provides some great
+  [documentation and manifests](http://strimzi.io/) for running Kafka on
+  OpenShift.
+
+### Helpful tools
+
+To help accelerate work with Kafka, here are a few applications to help:
+
+* [Emitter](https://github.com/bones-brigade/kafka-openshift-python-emitter) -
+  this is a skeleton to publish text information on a Kafka topic.
+
+* [Listener](https://github.com/bones-brigade/kafka-openshift-python-listener) -
+  this is a skeleton to log all messages from a Kafka topic.
+
+## Quickstart
 
 As this project utilizes Spark, it will be easiest to consume on OpenShift by
 using the [RADanalytics](https://radanalytics.io) tooling. The source-to-image
@@ -17,12 +39,6 @@ Spark clusters that are created by the
 [Oshinko project source-to-image](https://github.com/radanalyticsio/oshinko-s2i)
 utilities. Please see that documentation for more information about this
 process.
-
-This application also requires the deployment of a Kafka broker and something
-to emit messages to that broker. These topics are out of scope for this
-tutorial, but please see
-[this tutorial on radanalytics.io](https://radanalytics.io/applications/grafzahl)
-for some inspiration on prototyping this process.
 
 1. see the [radanalytics.io Get Started page](https://radanalytics.io/get-started)
    for instructions on installing that tooling
@@ -39,10 +55,3 @@ for some inspiration on prototyping this process.
 In this example, our application will subscribe to messages on the Kafka topic
 `topic1`, and it will publish messages on the topic `topic2` using the broker
 at `apache-kafka:9092`.
-
-## extending this project
-
-The source code of this application is documented to help new developers with
-a rapid start to building their own processing applications. Please see the
-`app.py` file for more documentation on modifying the behavior of this
-project.
