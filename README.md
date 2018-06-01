@@ -45,11 +45,13 @@ process.
 
 1. launch the skeleton with the following command:
    ```bash
-   oc new-app --template=oshinko-python-build-dc \
+   oc new-app --template=oshinko-python-spark-build-dc \
               -p APPLICATION_NAME=skeleton \
               -p GIT_URI=https://github.com/bones-brigade/kafka-spark-openshift-python \
-              -p APP_ARGS='--servers=apache-kafka:9092 --in=topic1 --out=topic2'  \
-              -p SPARK_OPTIONS='--packages org.apache.spark:spark-streaming-kafka-0-8_2.11:2.1.0'
+              -e KAFKA_BROKERS=localhost:9092 \
+              -e KAFKA_IN_TOPIC=topic1 \
+              -e KAFKA_OUT_TOPIC=topic2 \
+              -p SPARK_OPTIONS='--packages=org.apache.spark:spark-sql-kafka-0-10_2.11:2.3.0'
    ```
 
 In this example, our application will subscribe to messages on the Kafka topic

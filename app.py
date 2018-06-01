@@ -1,121 +1,104 @@
-"""spark-kafka-openshift skeleton
+"""kafka-spark-openshift-python
 
 This is a skeleton application for processing stream data from Apache
 Kafka with Apache Spark. It will read messages on an input topic and
 simply echo those message to the output topic.
 
-For an entry point to adding your own processing component, examine
-the `EchoStreamProcessor` class and its `configure_processing`
-function.
+This application uses Spark's _Structured Streaming_ interface, for
+more information please see
+https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html
 """
 
-
 import argparse
+import logging
 import os
-import re
 
-import kafka
-import pyspark
-from pyspark import streaming
-from pyspark.streaming import kafka as kstreaming
+import pyspark.sql as sql
+import pyspark.sql.types as types
+import pyspark.sql.functions as functions
 
 
-class EchoStreamProcessor():
-    """A class to echo Kafka stream data
+def main(args):
+    """Configure and start the Kafka stream processor"""
+    # acquire a SparkSession object
+    spark = (
+        sql
+        .SparkSession
+        .builder
+        .appName('kafka-spark-openshift-python')
+        .getOrCreate()
+    )
 
-    This class wraps the Spark and Kafka specific logic for creating a
-    DStream and applying processing functions to the RDDs contained
-    therein.
+    # configure the operations to read the input topic
+    records = (
+        spark
+        .readStream
+        .format('kafka')
+        .option('kafka.bootstrap.servers', args.brokers)
+        .option('subscribe', args.intopic)
+        .load()
+        .select(
+            functions.column('value').cast(types.StringType()).alias('value'))
+        # add your data operations here, the raw message is passed along as
+        # the alias `value`.
+        #
+        # for example, to process the message as json and create the
+        # corresponding objects you could do the following:
+        #
+        # .select(
+        #     functions.from_json(
+        #         functions.column('value'), msg_struct).alias('json'))
+        #
+        # the following operations would then access the object and its
+        # properties using the name `json`.
+    )
 
-    It is meant as an example of how to configure a processor to read
-    from Kafka and write data back to Kafka. See the
-    `configure_processing` function for a place to add your custom
-    modifications.
-    """
-    def __init__(self, input_topic, output_topic, servers, duration):
-        """Create a new StreamProcessor
+    # configure the output stream
+    writer = (
+        records
+        .writeStream
+        .format('kafka')
+        .option('kafka.bootstrap.servers', args.brokers)
+        .option('topic', args.outtopic)
+        .option('checkpointLocation', '/tmp')
+        .start()
+    )
 
-        Keyword arguments:
-        input_topic -- Kafka topic to read messages from
-        output_topic -- Kafka topic to write message to
-        servers -- A list of Kafka brokers
-        duration -- The window duration to sample the Kafka stream in
-                    seconds
-        """
-        self.input_topic = input_topic
-        self.output_topic = output_topic
-        self.servers = servers
-        self.spark_context = pyspark.SparkContext(
-            appName='spark-kafka-skeleton')
-        self.streaming_context = streaming.StreamingContext(
-            self.spark_context, duration)
-        self.kafka_stream = kstreaming.KafkaUtils.createDirectStream(
-            self.streaming_context,
-            [self.input_topic],
-            {'bootstrap.servers': self.servers})
-
-    def configure_processing(self):
-        """Configure the processing pipeline
-
-        This function contains all the stream processing
-        configuration that will affect how each RDD is processed.
-        It will be called before the stream listener is started.
-        """
-        def send_response(rdd):
-            """A function to publish an RDD to a Kafka topic"""
-            producer = kafka.KafkaProducer(bootstrap_servers=self.servers)
-            for r in rdd.collect():
-                try:
-                    record = r.encode('ascii', 'backslashreplace')
-                    producer.send(self.output_topic, record)
-                except Exception as e:
-                    print('Error sending collected RDD')
-                    print('Original exception: {}'.format(e))
-            producer.flush()
-
-        messages = self.kafka_stream.map(lambda m: m[1])
-        messages.foreachRDD(send_response)
-
-    def start_and_await_termination(self):
-        """Start the stream processor
-
-        This function will start the Spark-based stream processor,
-        it will run until `stop` is called or an exception is
-        thrown.
-        """
-        self.configure_processing()
-        self.streaming_context.start()
-        self.streaming_context.awaitTermination()
-
-    def stop(self):
-        """Stop the stream processor"""
-        self.streaming_context.stop()
+    # begin processing the input and output topics
+    writer.awaitTermination()
 
 
-def main():
-    """The main function
+def get_arg(env, default):
+    return os.getenv(env) if os.getenv(env, '') is not '' else default
 
-    This will process the command line arguments and launch the main
-    Spark/Kafka monitor class.
-    """
-    parser = argparse.ArgumentParser(
-        description='process data with Spark, using Kafka as the transport')
-    parser.add_argument('--in', dest='input_topic',
-        help='the kafka topic to read data from')
-    parser.add_argument('--out', dest='output_topic',
-        help='the kafka topic to publish data to')
-    parser.add_argument('--servers', help='the kafka brokers')
+
+def parse_args(parser):
     args = parser.parse_args()
-
-    processor = EchoStreamProcessor(
-        input_topic = args.input_topic,
-        output_topic = args.output_topic,
-        servers = args.servers,
-        duration = 3)
-
-    processor.start_and_await_termination()
+    args.brokers = get_arg('KAFKA_BROKERS', args.brokers)
+    args.intopic = get_arg('KAFKA_IN_TOPIC', args.intopic)
+    args.outtopic = get_arg('KAFKA_OUT_TOPIC', args.outtopic)
+    return args
 
 
 if __name__ == '__main__':
-    main()
-
+    logging.basicConfig(level=logging.INFO)
+    logging.info('starting kafka-spark-openshift-python')
+    parser = argparse.ArgumentParser(
+            description='copy messages from one stream to another')
+    parser.add_argument(
+            '--brokers',
+            help='The bootstrap servers, env variable KAFKA_BROKERS',
+            default='localhost:9092')
+    parser.add_argument(
+            '--in-topic',
+            dest='intopic',
+            help='Topic to publish to, env variable KAFKA_TOPIC',
+            default='topic1')
+    parser.add_argument(
+            '--out-topic',
+            dest='outtopic',
+            help='Topic to publish to, env variable KAFKA_TOPIC',
+            default='topic2')
+    args = parse_args(parser)
+    main(args)
+    logging.info('exiting')
