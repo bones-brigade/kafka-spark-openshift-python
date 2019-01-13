@@ -34,13 +34,14 @@ def main(args):
     # if a user function is specified, download it and import it
     if args.userfunction is not None:
         try:
-            logging.info('downloading user function file')
+            logging.info('downloading user function')
             logging.info(args.userfunction)
             dl = urllib.urlretrieve(args.userfunction)
             shutil.copyfile(dl[0], '/opt/app-root/src/userfunction.py')
             import userfunction
             user_function = functions.udf(
                 userfunction.main,  types.StringType())
+            logging.info('user function loaded')
         except Exception as e:
             logging.error('failed to import user function file')
             logging.error(e)
