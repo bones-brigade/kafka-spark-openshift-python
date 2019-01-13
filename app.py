@@ -12,6 +12,8 @@ https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html
 import argparse
 import logging
 import os
+import shutil
+import urllib.request as urllib
 
 import pyspark.sql as sql
 import pyspark.sql.types as types
@@ -29,12 +31,18 @@ def main(args):
         .getOrCreate()
     )
 
-    # check to see if a user function exists
-    try:
-        import userfunction
-        user_function = functions.udf(userfunction.main,  types.StringType())
-    except ImportError:
-        user_function = None
+    # if a user function is specified, download it and import it
+    if args.userfunction is not None:
+        try:
+            logging.info('downloading user function file')
+            dl = urllib.urlretrieve(args.source)
+            shutil.copyfile(dl[0], '/opt/app-root/src/userfunction.py')
+            import userfunction
+            user_function = functions.udf(
+                userfunction.main,  types.StringType())
+        except Exception:
+            logging.error('failed to import user function file')
+            user_function = None
 
     # configure the operations to read the input topic
     records = (
@@ -91,6 +99,7 @@ def parse_args(parser):
     args.brokers = get_arg('KAFKA_BROKERS', args.brokers)
     args.intopic = get_arg('KAFKA_IN_TOPIC', args.intopic)
     args.outtopic = get_arg('KAFKA_OUT_TOPIC', args.outtopic)
+    args.userfunction = get_arg('USER_FUNCTION_URI', args.userfunction)
     return args
 
 
@@ -113,6 +122,11 @@ if __name__ == '__main__':
             dest='outtopic',
             help='Topic to publish to, env variable KAFKA_TOPIC',
             default='topic2')
+    parser.add_argument(
+            '--user-function',
+            dest='userfunction',
+            help='URI to a user function .py file, env variable '
+            'USER_FUNCTION_URI')
     args = parse_args(parser)
     main(args)
     logging.info('exiting')
