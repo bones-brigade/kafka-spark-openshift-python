@@ -29,6 +29,13 @@ def main(args):
         .getOrCreate()
     )
 
+    # check to see if a user function exists
+    try:
+        import userfunction
+        user_function = functions.udf(userfunction.main,  types.StringType())
+    except ImportError:
+        user_function = None
+
     # configure the operations to read the input topic
     records = (
         spark
@@ -52,6 +59,13 @@ def main(args):
         # the following operations would then access the object and its
         # properties using the name `json`.
     )
+
+    # if it exists, add the user function to the stream pipeline
+    if user_function is not None:
+        records = (
+            records
+            .select(user_function(functions.column('value')).alias('value')
+        )
 
     # configure the output stream
     writer = (
