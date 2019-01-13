@@ -35,13 +35,15 @@ def main(args):
     if args.userfunction is not None:
         try:
             logging.info('downloading user function file')
-            dl = urllib.urlretrieve(args.source)
+            logging.info(args.userfunction)
+            dl = urllib.urlretrieve(args.userfunction)
             shutil.copyfile(dl[0], '/opt/app-root/src/userfunction.py')
             import userfunction
             user_function = functions.udf(
                 userfunction.main,  types.StringType())
-        except Exception:
+        except Exception as e:
             logging.error('failed to import user function file')
+            logging.error(e)
             user_function = None
 
     # configure the operations to read the input topic
