@@ -10,9 +10,10 @@ https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html
 """
 
 import argparse
+import importlib.machinery as importlib
 import logging
 import os
-import shutil
+import types as pytypes
 import urllib.request as urllib
 
 import pyspark.sql as sql
@@ -37,8 +38,9 @@ def main(args):
             logging.info('downloading user function')
             logging.info(args.userfunction)
             dl = urllib.urlretrieve(args.userfunction)
-            shutil.copyfile(dl[0], '/opt/app-root/src/userfunction.py')
-            import userfunction
+            loader = importlib.SourceFileLoader('userfunction', dl[0])
+            userfunction = pytypes.ModuleType(loader.name)
+            loader.exec_module(userfunction)
             user_function = functions.udf(
                 userfunction.main,  types.StringType())
             logging.info('user function loaded')
