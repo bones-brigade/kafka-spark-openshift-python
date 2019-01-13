@@ -72,7 +72,7 @@ def main(args):
     if user_function is not None:
         records = (
             records
-            .select(user_function(functions.column('value')).alias('value')
+            .select(user_function(functions.column('value')).alias('value'))
         )
 
     # configure the output stream
