@@ -78,6 +78,7 @@ def main(args):
         records = (
             records
             .select(user_function(functions.column('value')).alias('value'))
+            .where('value is not null')
         )
 
     # configure the output stream
