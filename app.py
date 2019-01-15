@@ -14,7 +14,11 @@ import importlib.machinery as importlib
 import logging
 import os
 import types as pytypes
-import urllib.request as urllib
+# try to import for py3 first
+try:
+    import urllib.request as urllib
+except ImportError:
+    import urllib
 
 import pyspark.sql as sql
 import pyspark.sql.types as types
