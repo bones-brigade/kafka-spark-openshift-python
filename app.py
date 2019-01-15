@@ -10,37 +10,15 @@ https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html
 """
 
 import argparse
+import importlib.machinery as importlib
 import logging
 import os
 import types as pytypes
+import urllib.request as urllib
 
 import pyspark.sql as sql
 import pyspark.sql.types as types
 import pyspark.sql.functions as functions
-
-
-def get_user_function(udf_uri):
-    """download the user defined function module and return the function"""
-    # get the udf file, trying py3 first
-    try:
-        import urllib.request as urllib
-    except ImportError:
-        import urllib
-    dl = urllib.urlretrieve(args.userfunction)[0]
-
-    # load the module, trying py3 first
-    try:
-        import importlib.machinery as importlib
-        loader = importlib.SourceFileLoader('userfunction', dl)
-        userfunction = pytypes.ModuleType(loader.name)
-        loader.exec_module(userfunction)
-    except ImportError:
-        import imp
-        imp.load_source('userfunction', dl)
-        import userfunction
-
-    ret = functions.udf(userfunction.main,  types.StringType())
-    return ret
 
 
 def main(args):
@@ -59,28 +37,11 @@ def main(args):
         try:
             logging.info('downloading user function')
             logging.info(args.userfunction)
-            #user_function = get_user_function(args.userfunction)
-
-            # get the udf file, trying py3 first
-            try:
-                import urllib.request as urllib
-            except ImportError:
-                import urllib
             dl = urllib.urlretrieve(args.userfunction)[0]
-
-            # load the module, trying py3 first
-            try:
-                import importlib.machinery as importlib
-                loader = importlib.SourceFileLoader('userfunction', dl)
-                userfunction = pytypes.ModuleType(loader.name)
-                loader.exec_module(userfunction)
-            except ImportError:
-                import imp
-                imp.load_source('userfunction', dl)
-                import userfunction
-
+            loader = importlib.SourceFileLoader('userfunction', dl)
+            userfunction = pytypes.ModuleType(loader.name)
+            loader.exec_module(userfunction)
             user_function = functions.udf(userfunction.main,  types.StringType())
-
             logging.info('user function loaded')
         except Exception as e:
             logging.error('failed to import user function file')
