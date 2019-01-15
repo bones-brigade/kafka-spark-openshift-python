@@ -1,6 +1,6 @@
 import json
 
-def main(value):
+def user_defined_function(value):
     data = value
     if data == '':
         ret = {'empty': ''}

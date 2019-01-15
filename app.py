@@ -41,7 +41,8 @@ def main(args):
             loader = importlib.SourceFileLoader('userfunction', dl)
             userfunction = pytypes.ModuleType(loader.name)
             loader.exec_module(userfunction)
-            user_function = functions.udf(userfunction.main,  types.StringType())
+            user_function = functions.udf(
+                userfunction.user_defined_function,  types.StringType())
             logging.info('user function loaded')
         except Exception as e:
             logging.error('failed to import user function file')
