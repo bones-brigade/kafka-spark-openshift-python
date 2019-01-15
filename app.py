@@ -10,19 +10,36 @@ https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html
 """
 
 import argparse
-import importlib.machinery as importlib
 import logging
 import os
 import types as pytypes
-# try to import for py3 first
-try:
-    import urllib.request as urllib
-except ImportError:
-    import urllib
 
 import pyspark.sql as sql
 import pyspark.sql.types as types
 import pyspark.sql.functions as functions
+
+
+def get_user_function(udf_uri):
+    """download the user defined function module and return the function"""
+    # get the udf file, trying py3 first
+    try:
+        import urllib.request as urllib
+    except ImportError:
+        import urllib
+    dl = urllib.urlretrieve(args.userfunction)[0]
+
+    # load the module, trying py3 first
+    try:
+        import importlib.machinery as importlib
+        loader = importlib.SourceFileLoader('userfunction', dl)
+        userfunction = pytypes.ModuleType(loader.name)
+        loader.exec_module(userfunction)
+    except ImportError:
+        import imp
+        userfunction = imp.load_source('userfunction', dl)
+
+    ret = functions.udf(userfunction.main,  types.StringType())
+    return ret
 
 
 def main(args):
@@ -41,12 +58,7 @@ def main(args):
         try:
             logging.info('downloading user function')
             logging.info(args.userfunction)
-            dl = urllib.urlretrieve(args.userfunction)
-            loader = importlib.SourceFileLoader('userfunction', dl[0])
-            userfunction = pytypes.ModuleType(loader.name)
-            loader.exec_module(userfunction)
-            user_function = functions.udf(
-                userfunction.main,  types.StringType())
+            user_function = get_user_function(args.userfunction)
             logging.info('user function loaded')
         except Exception as e:
             logging.error('failed to import user function file')
