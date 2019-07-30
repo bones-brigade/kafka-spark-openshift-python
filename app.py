@@ -1,4 +1,4 @@
-"""kafka-spark-openshift-python
+"""kafka-spark-python
 
 This is a skeleton application for processing stream data from Apache
 Kafka with Apache Spark. It will read messages on an input topic and
@@ -28,7 +28,7 @@ def main(args):
         sql
         .SparkSession
         .builder
-        .appName('kafka-spark-openshift-python')
+        .appName('kafka-spark-python')
         .getOrCreate()
     )
 
@@ -111,7 +111,7 @@ def parse_args(parser):
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
-    logging.info('starting kafka-spark-openshift-python')
+    logging.info('starting kafka-spark-python')
     parser = argparse.ArgumentParser(
             description='copy messages from one stream to another')
     parser.add_argument(

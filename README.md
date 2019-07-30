@@ -1,4 +1,4 @@
-# kafka-spark-openshift-python
+# kafka-spark-python
 
 A Python source-to-image application skeleton for using Apache Spark and
 Kafka on OpenShift.
@@ -23,10 +23,10 @@ using Spark's streaming utilities for Kafka.
 
 To help accelerate work with Kafka, here are a few applications to help:
 
-* [Emitter](https://github.com/bones-brigade/kafka-openshift-python-emitter) -
+* [Emitter](https://gitlab.com/bones-brigade/kafka-python-emitter) -
   this is a skeleton to publish text information on a Kafka topic.
 
-* [Listener](https://github.com/bones-brigade/kafka-openshift-python-listener) -
+* [Listener](https://gitlab.com/bones-brigade/kafka-python-listener) -
   this is a skeleton to log all messages from a Kafka topic.
 
 ## Quickstart
@@ -47,7 +47,7 @@ process.
    ```bash
    oc new-app --template=oshinko-python36-spark-build-dc \
               -p APPLICATION_NAME=skeleton \
-              -p GIT_URI=https://github.com/bones-brigade/kafka-spark-openshift-python \
+              -p GIT_URI=https://gitlab.com/bones-brigade/kafka-spark-python \
               -e KAFKA_BROKERS=localhost:9092 \
               -e KAFKA_IN_TOPIC=topic1 \
               -e KAFKA_OUT_TOPIC=topic2 \
@@ -77,12 +77,12 @@ repository:
 ```bash
    oc new-app --template=oshinko-python36-spark-build-dc \
               -p APPLICATION_NAME=skeleton \
-              -p GIT_URI=https://github.com/bones-brigade/kafka-spark-openshift-python \
+              -p GIT_URI=https://gitlab.com/bones-brigade/kafka-spark-python \
               -e KAFKA_BROKERS=localhost:9092 \
               -e KAFKA_IN_TOPIC=topic1 \
               -e KAFKA_OUT_TOPIC=topic2 \
               -p SPARK_OPTIONS='--packages=org.apache.spark:spark-sql-kafka-0-10_2.11:2.3.0'
-              -e USER_FUNCTION_URI='https://raw.githubusercontent.com/bones-brigade/kafka-spark-openshift-python/master/examples/wrapper.py'
+              -e USER_FUNCTION_URI='https://gitlab.com/bones-brigade/kafka-spark-python/raw/master/examples/wrapper.py'
 ```
 
 ### User defined function API
